@@ -9,335 +9,298 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-/* 1. CORE SETUP */
-* {
-    box-sizing: border-box;
+/* 1) Design tokens */
+:root{
+  --bg: #0b1220;          /* page background */
+  --slide: #1f112e;       /* slide background */
+  --border: #22304a;      /* borders / separators */
+  --text: #e7eefc;        /* main text */
+  --muted: #a8b3cc;       /* secondary text */
+  --accent: #22c55e;      /* ONE accent color (green) */
+  --radius: 14px;
+  --shadow: 0 18px 45px rgba(0,0,0,.35);
 }
 
-body {
-    background-color: #0f172a; /* Dark Navy Background */
-    display: grid;
-    gap: 30px;
-    grid-template-columns: 1fr;
-    margin: 0;
-    min-height: 100vh;
-    padding: 40px 0;
-    place-items: center;
-    font-family: 'Inter', sans-serif;
+/* 2) Base reset */
+*{ box-sizing: border-box; }
+
+body{
+  margin: 0;
+  min-height: 100vh;
+  padding: 40px 0;
+  display: grid;
+  place-items: center;
+  gap: 28px;
+  background: var(--bg);
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
 }
 
-/* 2. SLIDE CONTAINER */
-.slide-container {
-    background-color: #1e293b; /* Slightly lighter slate for slide bg */
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: column;
-    height: 720px;
-    justify-content: center;
-    overflow: hidden;
-    padding: 60px;
-    position: relative;
-    width: 1280px;
-    color: #f1f5f9; /* Light text */
+/* 3) Slide container */
+.slide-container{
+  width: 1280px;
+  height: 720px;
+  padding: 56px;
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
 }
 
-/* Background Design Elements */
-.slide-container::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); /* Emerald Glow */
-    border-radius: 50%;
-    z-index: 0;
+/* Remove decorative glows */
+.slide-container::before,
+.slide-container::after{
+  content: none !important;
 }
 
-.slide-container::after {
-    content: '';
-    position: absolute;
-    bottom: -100px;
-    left: -100px;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, transparent 70%); /* Blue Glow */
-    border-radius: 50%;
-    z-index: 0;
+/* 4) Typography */
+h1,h2,h3{
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
 }
 
-.slide-container > * {
-    position: relative;
-    z-index: 1;
+h1{
+  font-size: 58px;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  font-family: inherit; /* unify: no Playfair */
 }
 
-/* 3. TYPOGRAPHY */
-h1, h2, h3 {
-    margin: 0;
-    font-weight: 700;
-    color: #f8fafc;
+.slide-title{
+  width: 100%;
+  font-size: 40px;
+  color: var(--accent);
+  padding-bottom: 16px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 64px;
-    line-height: 1.1;
-    margin-bottom: 20px;
+h3{
+  font-size: 22px;
+  color: var(--text);
+  margin-bottom: 10px;
 }
 
-.slide-title {
-    font-size: 42px;
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #334155;
-    color: #10b981; /* Emerald Accent */
-    display: flex;
-    align-items: center;
-    width: 100%;
+p, li, td, th{
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--muted);
 }
 
-h3 {
-    font-size: 24px;
-    color: #38bdf8; /* Sky Blue Accent */
-    margin-bottom: 15px;
+strong{ color: var(--text); }
+
+/* 5) Common layout helpers */
+.content-area{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  width: 100%;
 }
 
-p, li, td, th {
-    font-size: 18px;
-    line-height: 1.6;
-    color: #cbd5e1;
+/* Title slide */
+.title-layout{
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
-/* 4. LAYOUTS */
-
-/* Title Slide */
-.title-layout {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+.title-layout .subtitle{
+  font-size: 22px;
+  max-width: 900px;
+  color: var(--muted);
+  margin: 0 0 8px 0;
 }
 
-.title-layout .subtitle {
-    font-size: 24px;
-    color: #94a3b8;
-    max-width: 800px;
-    margin-bottom: 10px;
+.title-layout .authors{
+  font-size: 24px;
+  margin: 24px 0 8px 0;
+  color: var(--text);
+  font-weight: 600;
 }
 
-.title-layout .authors {
-    font-size: 28px;
-    color: #38bdf8;
-    margin: 30px 0 10px 0;
-    font-weight: 600;
+.title-layout .meta{
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  margin-top: 8px;
 }
 
-.title-layout .meta {
-    font-size: 16px;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 10px;
+/* Two-column layout */
+.two-column{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 42px;
+  width: 100%;
+  height: 100%;
+  align-items: center;
 }
 
-/* Two Column */
-.two-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    width: 100%;
-    height: 100%;
+/* Lists */
+ul{
+  margin: 12px 0 0 20px;
+  padding: 0;
+}
+li{ margin: 8px 0; }
+
+/* 6) “Cards” (Objectives + Tiles) unified */
+.objectives-container,
+.tiled-content{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;
 }
 
-.content-area {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    justify-content: center;
-    width: 100%;
+.objective-card,
+.tile{
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
 }
 
-/* Enhanced Objectives Layout (Slide 2) */
-.objectives-container {
-    display: flex;
-    gap: 40px;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
+/* Keep icons but simplify */
+.objective-card .icon-circle{
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: rgba(34,197,94,0.08);
+  margin-bottom: 6px;
 }
 
-.objective-card {
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    border: 1px solid #334155;
-    border-radius: 16px;
-    padding: 50px 30px;
-    flex: 1;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
-    overflow: hidden;
+.objective-card i,
+.tile .icon i{
+  font-size: 22px;
+  color: var(--accent);
 }
 
-.objective-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
-    border-color: #10b981;
+.tile .icon{
+  margin: 0 0 6px 0;
+  color: var(--accent);
+  font-size: 0; /* icon size handled by <i> */
 }
 
-.objective-card .icon-circle {
-    width: 90px;
-    height: 90px;
-    background-color: rgba(56, 189, 248, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 30px;
+/* Remove hover effects to keep it clean */
+.objective-card:hover,
+.tile:hover{
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
 }
 
-.objective-card i {
-    font-size: 40px;
-    color: #38bdf8;
+/* 7) Images */
+.image-wrapper{
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  height: 100%;
+  width: 100%;
 }
 
-.objective-card.accent-emerald .icon-circle {
-    background-color: rgba(16, 185, 129, 0.1);
+.image-wrapper img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.objective-card.accent-emerald i {
-    color: #10b981;
+/* Bleed image layout */
+.slide-container.bleed-image-layout{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
 }
 
-/* Tiled Layouts (Legacy) */
-.tiled-content {
-    display: flex;
-    gap: 30px;
-    width: 100%;
-    justify-content: center;
+.slide-container.bleed-image-layout > .content-container{
+  padding: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.tile {
-    background-color: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 30px;
-    flex: 1;
-    text-align: center;
-    transition: transform 0.3s ease;
+.slide-container.bleed-image-layout img.bleed-image-side{
+  width: 100%;
+  height: 720px;
+  object-fit: cover;
+  border-left: 3px solid var(--accent);
 }
 
-.tile .icon {
-    font-size: 40px;
-    color: #10b981;
-    margin-bottom: 20px;
+/* 8) Timeline (simple) */
+.timeline-layout{
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  width: 100%;
 }
 
-/* Image Layouts */
-.image-wrapper {
-    border-radius: 12px;
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
-    border: 1px solid #334155;
-    background: #000;
+.timeline-layout::before{ content: none; }
+
+.timeline-item{
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  text-align: center;
+  background: transparent;
 }
 
-.image-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.timeline-dot{
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin: 0 auto 12px auto;
+  border: none;
 }
 
-/* Bleed Image Layout */
-.slide-container.bleed-image-layout {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 0;
-    align-items: start;
-    background-color: #1e293b;
+/* 9) Formulas */
+.formula-block{
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
 }
 
-.slide-container.bleed-image-layout > .content-container {
-    padding: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
+math{
+  font-size: 26px;
+  color: var(--text);
+  font-family: "Times New Roman", Times, serif;
 }
 
-.slide-container.bleed-image-layout > .image-container {
-    height: 100%;
-    width: 100%;
+/* 10) Small tweaks */
+code{
+  color: var(--text);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 2px 6px;
+  border-radius: 8px;
 }
 
-.slide-container.bleed-image-layout img.bleed-image-side {
-    width: 100%;
-    height: 100%;
-    max-height: 720px;
-    object-fit: cover;
-    border-left: 4px solid #10b981;
-}
-
-/* Timeline */
-.timeline-layout {
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-    width: 100%;
-    margin-top: 40px;
-}
-
-.timeline-layout::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #334155;
-    z-index: 0;
-}
-
-.timeline-item {
-    position: relative;
-    z-index: 1;
-    background-color: #1e293b;
-    padding: 0 10px;
-    text-align: center;
-    width: 22%;
-}
-
-.timeline-dot {
-    width: 20px;
-    height: 20px;
-    background-color: #10b981;
-    border-radius: 50%;
-    margin: 0 auto 20px;
-    border: 4px solid #0f172a;
-}
-
-/* Formulas */
-.formula-block {
-    background: #0f172a;
-    padding: 20px;
-    border-radius: 8px;
-    border-left: 4px solid #38bdf8;
-    margin: 20px 0;
-    text-align: center;
-}
-
-math {
-    font-size: 26px; /* Slightly larger for visibility */
-    color: #e2e8f0;
-    font-family: 'Times New Roman', serif;
-}
     </style>
 </head>
 <body>
