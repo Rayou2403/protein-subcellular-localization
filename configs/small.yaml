@@ -1,0 +1,73 @@
+# Small dataset configuration (debug run)
+experiment_name: "dual_embedding_fusion_small"
+seed: 42
+
+# Data paths
+data:
+  metadata_path: "data/small/splits.csv"
+  esmc_h5_path: "data/small/embeddings/esmc.h5"
+  prostt5_h5_path: "data/small/embeddings/prostt5.h5"
+  fasta_path: "data/small/sequences.fasta"
+  num_workers: 0
+
+# Model architecture
+model:
+  esmc_dim: 1280
+  prostt5_dim: 1024
+  hidden_dim: 256
+  num_attention_heads: 8
+  num_fusion_layers: 1
+  dropout: 0.3
+  num_classes: 6
+  pooling_type: "attention"
+  use_gated_fusion: true
+
+# Training hyperparameters
+training:
+  batch_size: 8
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  num_epochs: 10
+  gradient_clip_norm: 1.0
+  early_stopping_patience: 3
+  use_amp: false
+
+  # Loss function
+  loss_type: "focal"
+  focal_gamma: 2.0
+  focal_alpha: null
+
+  # Sampling strategy
+  use_balanced_sampler: true
+
+# Optimizer and scheduler
+optimizer:
+  type: "adamw"
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+
+scheduler:
+  type: "cosine"
+  warmup_epochs: 1
+  min_lr: 1.0e-6
+
+# Evaluation
+evaluation:
+  metrics: ["accuracy", "macro_f1", "mcc", "per_class"]
+  save_predictions: true
+  save_confusion_matrix: true
+
+# Paths
+paths:
+  checkpoint_dir: "results/checkpoints_small"
+  log_dir: "results/logs_small"
+  output_dir: "results/evaluation_small"
+
+# Class names
+class_names:
+  - "Cytoplasmic"
+  - "Cytoplasmic Membrane"
+  - "Periplasmic"
+  - "Outer Membrane"
+  - "Extracellular"
+  - "Cell Wall"

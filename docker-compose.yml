@@ -1,0 +1,10 @@
+services:
+  psl:
+    build: .
+    image: psl:latest
+    container_name: psl
+    volumes:
+      - ./data:/workspace/data
+      - ./results:/workspace/results
+    tty: true
+    stdin_open: true
