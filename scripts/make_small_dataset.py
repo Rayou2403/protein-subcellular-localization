@@ -15,12 +15,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--splits",
         required=True,
-        help="Path to CSV with split column (e.g., data/splits.csv)",
+        help="Path to CSV with split column (e.g., data/processed/splits.csv)",
     )
     parser.add_argument(
         "--output_dir",
         required=True,
-        help="Output directory for small dataset (e.g., data/small)",
+        help="Output directory for small dataset (e.g., data/processed/small)",
     )
     parser.add_argument(
         "--max_per_class",

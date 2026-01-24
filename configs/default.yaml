@@ -4,19 +4,21 @@ seed: 42
 
 # Data paths
 data:
-  metadata_path: "data/splits.csv"
-  esmc_h5_path: "data/embeddings/esmc.h5"
-  prostt5_h5_path: "data/embeddings/prostt5.h5"
-  fasta_path: "data/sequences.fasta"  # For embedding extraction
+  metadata_path: "data/processed/splits.csv"
+  esmc_h5_path: "data/processed/embeddings/esmc.h5"
+  prostt5_h5_path: "data/processed/embeddings/prostt5.h5"
+  fasta_path: "data/raw/graphpart_set.fasta"  # For embedding extraction
   num_workers: 4
 
 # Model architecture
 model:
-  esmc_dim: 1280  # ESM-C embedding dimension
-  prostt5_dim: 1024  # ProstT5 3Di embedding dimension
+  type: "transformer_mlp"  # Options: transformer_mlp, gated_mlp
+  esmc_dim: 960  # ESM-C 300M embedding dimension
+  prostt5_dim: 1024  # ProtBert/ProstT5 embedding dimension
   hidden_dim: 512
-  num_attention_heads: 8
-  num_fusion_layers: 2
+  num_attention_heads: 4
+  num_transformer_layers: 2
+  num_fusion_layers: 2  # Used only for gated_mlp
   dropout: 0.3
   num_classes: 6
   pooling_type: "attention"  # Options: attention, mean_max

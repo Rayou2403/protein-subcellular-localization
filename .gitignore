@@ -39,8 +39,17 @@ ENV/
 # Data and results (not tracked)
 data/*
 !data/README.md
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/processed/embeddings/.gitkeep
+!data/interim/.gitkeep
+!data/interim/subsets/.gitkeep
+!data/external/.gitkeep
 results/*
 !results/.gitkeep
+reports/*
+!reports/.gitkeep
+!reports/figures/.gitkeep
 
 # Model checkpoints
 *.pt
@@ -51,6 +60,16 @@ results/*
 *.log
 logs/
 wandb/
+
+# LaTeX
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz
+report/*.fls
+report/*.fdb_latexmk
+report/*.pdf
 
 # OS
 .DS_Store

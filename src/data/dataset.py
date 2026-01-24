@@ -1,7 +1,7 @@
 """
 PyTorch Dataset for protein localization with dual embeddings.
 
-Supports loading embeddings from HDF5 files (pooled, fixed-size vectors).
+Supports loading pooled embeddings from HDF5 files (fixed-size vectors).
 """
 
 from typing import Dict, Optional, List
@@ -16,7 +16,7 @@ class ProteinLocalizationDataset(Dataset):
     """
     Dataset for protein subcellular localization prediction.
 
-    Loads precomputed ESM-C and ProstT5 embeddings from HDF5 files.
+    Loads precomputed ESM-C and second-embedding (ProtBert/ProstT5) embeddings from HDF5 files.
     Embeddings are pooled (fixed-size vectors per protein).
     """
 

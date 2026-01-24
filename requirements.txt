@@ -30,5 +30,6 @@ brotli==1.2.0
 msgpack==1.1.2
 msgpack-numpy==0.4.8
 zstd==1.5.7.3
+accelerate==0.29.3
 
 # ESM-C SDK is installed in Dockerfile (avoid heavy resolver backtracking)

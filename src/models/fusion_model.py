@@ -2,7 +2,7 @@
 Dual-Embedding Fusion Model for protein localization.
 
 Architecture for pooled embeddings (fixed-size vectors):
-1. Separate projections for ESM-C and ProstT5 embeddings
+1. Separate projections for ESM-C and a second embedding (ProtBert/ProstT5)
 2. Gated fusion mechanism
 3. Classification head
 """
@@ -190,3 +190,72 @@ class DualEmbeddingFusionModel(nn.Module):
             output["gate_weights"] = torch.stack(gate_weights_all, dim=1)
 
         return output
+
+
+class TransformerFusionModel(nn.Module):
+    """
+    Transformer + MLP model for dual pooled embeddings.
+
+    Treats each modality as a token, applies a small Transformer encoder,
+    then classifies using an MLP head.
+    """
+
+    def __init__(
+        self,
+        esmc_dim: int = 1280,
+        prostt5_dim: int = 1024,
+        hidden_dim: int = 512,
+        num_attention_heads: int = 4,
+        num_transformer_layers: int = 2,
+        dropout: float = 0.3,
+        num_classes: int = 6,
+    ):
+        super().__init__()
+
+        self.esmc_projection = nn.Sequential(
+            nn.Linear(esmc_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+        self.prostt5_projection = nn.Sequential(
+            nn.Linear(prostt5_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=hidden_dim,
+            nhead=num_attention_heads,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_transformer_layers)
+        self.post_norm = nn.LayerNorm(hidden_dim)
+
+        self.classifier = ClassificationHead(
+            input_dim=hidden_dim,
+            hidden_dim=hidden_dim,
+            num_classes=num_classes,
+            dropout=dropout,
+        )
+
+    def forward(
+        self,
+        esmc_embeddings: torch.Tensor,
+        prostt5_embeddings: torch.Tensor,
+        **kwargs,
+    ) -> Dict[str, torch.Tensor]:
+        esmc_proj = self.esmc_projection(esmc_embeddings)
+        prost_proj = self.prostt5_projection(prostt5_embeddings)
+
+        tokens = torch.stack([esmc_proj, prost_proj], dim=1)
+        cls = self.cls_token.expand(tokens.size(0), -1, -1)
+        x = torch.cat([cls, tokens], dim=1)
+
+        x = self.encoder(x)
+        cls_out = self.post_norm(x[:, 0, :])
+        logits = self.classifier(cls_out)
+        return {"logits": logits}

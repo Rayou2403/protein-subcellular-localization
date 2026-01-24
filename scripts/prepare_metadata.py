@@ -77,12 +77,12 @@ def main():
     parser.add_argument(
         "--fasta",
         required=True,
-        help="Input FASTA file (e.g., data/graphpart_set.fasta)",
+        help="Input FASTA file (e.g., data/raw/graphpart_set.fasta)",
     )
     parser.add_argument(
         "--output",
         required=True,
-        help="Output CSV file (e.g., data/metadata.csv)",
+        help="Output CSV file (e.g., data/processed/metadata.csv)",
     )
     args = parser.parse_args()
 

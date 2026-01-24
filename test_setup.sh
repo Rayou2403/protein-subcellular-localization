@@ -8,13 +8,13 @@ echo ""
 
 echo "1. Testing metadata preparation..."
 python scripts/prepare_metadata.py \
-    --fasta data/graphpart_set.fasta \
-    --output data/metadata_test.csv
+    --fasta data/raw/graphpart_set.fasta \
+    --output data/processed/metadata_test.csv
 
-if [ -f data/metadata_test.csv ]; then
+if [ -f data/processed/metadata_test.csv ]; then
     echo "   ✓ Metadata CSV created"
-    head -5 data/metadata_test.csv
-    rm data/metadata_test.csv
+    head -5 data/processed/metadata_test.csv
+    rm data/processed/metadata_test.csv
 else
     echo "   ✗ Failed to create metadata CSV"
     exit 1

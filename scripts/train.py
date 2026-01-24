@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data import ProteinLocalizationDataset, collate_variable_length
-from src.models import DualEmbeddingFusionModel
+from src.models import DualEmbeddingFusionModel, TransformerFusionModel
 from src.training import Trainer, get_loss_function
 
 
@@ -111,20 +111,33 @@ def create_data_loaders(config: dict):
 def create_model(config: dict) -> torch.nn.Module:
     """Create model from config."""
     model_config = config["model"]
+    model_type = model_config.get("type", "gated_mlp")
 
-    model = DualEmbeddingFusionModel(
-        esmc_dim=model_config["esmc_dim"],
-        prostt5_dim=model_config["prostt5_dim"],
-        hidden_dim=model_config["hidden_dim"],
-        num_attention_heads=model_config["num_attention_heads"],
-        num_fusion_layers=model_config["num_fusion_layers"],
-        dropout=model_config["dropout"],
-        num_classes=model_config["num_classes"],
-        pooling_type=model_config["pooling_type"],
-        use_gated_fusion=model_config["use_gated_fusion"],
-    )
+    if model_type == "transformer_mlp":
+        return TransformerFusionModel(
+            esmc_dim=model_config["esmc_dim"],
+            prostt5_dim=model_config["prostt5_dim"],
+            hidden_dim=model_config["hidden_dim"],
+            num_attention_heads=model_config.get("num_attention_heads", 4),
+            num_transformer_layers=model_config.get("num_transformer_layers", 2),
+            dropout=model_config["dropout"],
+            num_classes=model_config["num_classes"],
+        )
 
-    return model
+    if model_type == "gated_mlp":
+        return DualEmbeddingFusionModel(
+            esmc_dim=model_config["esmc_dim"],
+            prostt5_dim=model_config["prostt5_dim"],
+            hidden_dim=model_config["hidden_dim"],
+            num_attention_heads=model_config.get("num_attention_heads", 8),
+            num_fusion_layers=model_config.get("num_fusion_layers", 2),
+            dropout=model_config["dropout"],
+            num_classes=model_config["num_classes"],
+            pooling_type=model_config.get("pooling_type", "attention"),
+            use_gated_fusion=model_config.get("use_gated_fusion", True),
+        )
+
+    raise ValueError(f"Unknown model.type: {model_type}")
 
 
 def create_optimizer(model: torch.nn.Module, config: dict):

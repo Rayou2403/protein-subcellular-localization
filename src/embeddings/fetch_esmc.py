@@ -234,6 +234,10 @@ def run_esmc_extraction(fasta: str, output_h5: str, model_name: str = "esmc_300m
             n = append_id_emb_batch(ids_ds, emb_ds, list(ids), emb)
 
     print(f"[ESMC] Saved {n} embeddings to {output_h5} (dim={D}).")
+    del model
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 def main():
     ap = argparse.ArgumentParser(description="Extract ESM-C embeddings to HDF5 (ids + embeddings)")

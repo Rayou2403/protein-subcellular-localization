@@ -4,18 +4,20 @@ seed: 42
 
 # Data paths
 data:
-  metadata_path: "data/small/splits.csv"
-  esmc_h5_path: "data/small/embeddings/esmc.h5"
-  prostt5_h5_path: "data/small/embeddings/prostt5.h5"
-  fasta_path: "data/small/sequences.fasta"
+  metadata_path: "data/processed/small/splits.csv"
+  esmc_h5_path: "data/processed/small/embeddings/esmc.h5"
+  prostt5_h5_path: "data/processed/small/embeddings/prostt5.h5"
+  fasta_path: "data/processed/small/sequences.fasta"
   num_workers: 0
 
 # Model architecture
 model:
-  esmc_dim: 1280
+  type: "transformer_mlp"
+  esmc_dim: 960
   prostt5_dim: 1024
   hidden_dim: 256
-  num_attention_heads: 8
+  num_attention_heads: 4
+  num_transformer_layers: 1
   num_fusion_layers: 1
   dropout: 0.3
   num_classes: 6
