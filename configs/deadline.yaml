@@ -1,0 +1,67 @@
+# Deadline-focused configuration (fast turnaround under CPU constraints)
+experiment_name: "dual_embedding_deadline"
+seed: 42
+
+data:
+  metadata_path: "data/processed/small/splits.csv"
+  esmc_h5_path: "data/processed/embeddings/esmc.h5"
+  prostt5_h5_path: "data/processed/small/embeddings/prostt5.h5"
+  fasta_path: "data/processed/small/sequences.fasta"
+  num_workers: 0
+
+model:
+  type: "transformer_lstm"
+  esmc_dim: 960
+  prostt5_dim: 1024
+  hidden_dim: 256
+  num_attention_heads: 4
+  num_transformer_layers: 1
+  lstm_hidden_dim: 128
+  lstm_layers: 1
+  lstm_bidirectional: true
+  num_fusion_layers: 1
+  dropout: 0.3
+  num_classes: 6
+  pooling_type: "attention"
+  use_gated_fusion: true
+
+training:
+  batch_size: 16
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  num_epochs: 20
+  gradient_clip_norm: 1.0
+  early_stopping_patience: 5
+  use_amp: false
+  loss_type: "focal"
+  focal_gamma: 2.0
+  focal_alpha: null
+  use_balanced_sampler: true
+
+optimizer:
+  type: "adamw"
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+
+scheduler:
+  type: "cosine"
+  warmup_epochs: 1
+  min_lr: 1.0e-6
+
+evaluation:
+  metrics: ["accuracy", "macro_f1", "mcc", "per_class"]
+  save_predictions: true
+  save_confusion_matrix: true
+
+paths:
+  checkpoint_dir: "results/checkpoints_deadline"
+  log_dir: "results/logs_deadline"
+  output_dir: "results/evaluation"
+
+class_names:
+  - "Cytoplasmic"
+  - "Cytoplasmic Membrane"
+  - "Periplasmic"
+  - "Outer Membrane"
+  - "Extracellular"
+  - "Cell Wall"

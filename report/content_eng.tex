@@ -177,6 +177,16 @@ Cell Wall & 0.857 & 0.818 & 0.837 \\
 \caption{Per-class F1.}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\IfFileExists{figures/confusion_matrix_approx.png}{
+  \includegraphics[width=0.9\linewidth]{confusion_matrix_approx.png}
+}{
+  \fbox{\parbox{0.8\linewidth}{\centering Figure not available: regenerate result figures.}}
+}
+\caption{Approximate confusion matrix reconstructed from aggregated report metrics (not the exact matrix computed from raw predictions).}
+\end{figure}
+
 \section{Limitations and future work}
 \begin{itemize}
   \item Increase \texttt{max\_len} or use a GPU to retain more sequence information.

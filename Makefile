@@ -1,5 +1,7 @@
 VENV ?= .venv
 PYTHON ?= python3
+SMALL_DIR ?= data/processed/small
+SMALL_MAX_PER_CLASS ?= 80
 
 venv:
 	@if [ ! -x "$(VENV)/bin/python" ]; then python3 -m venv $(VENV); fi
@@ -61,6 +63,36 @@ run-eval:
 		--config configs/default.yaml
 
 project: prepare embeddings run run-eval report-figures
+
+small-data:
+	mkdir -p $(SMALL_DIR)
+	$(PYTHON) scripts/make_small_dataset.py \
+		--splits data/processed/splits.csv \
+		--output_dir $(SMALL_DIR) \
+		--max_per_class $(SMALL_MAX_PER_CLASS) \
+		--seed 42
+
+small-prost:
+	mkdir -p $(SMALL_DIR)/embeddings
+	$(PYTHON) -m src.embeddings.fetch_embeddings \
+		--esm_file data/processed/embeddings/esmc.h5 \
+		--prost_fasta $(SMALL_DIR)/sequences.fasta \
+		--prost_out $(SMALL_DIR)/embeddings/prostt5.h5 \
+		--embed2_backend prostt5 \
+		--prost_pooling meanpool \
+		--prost_batch 1 \
+		--prost_offload_dir data/interim/offload \
+		--prost_max_memory 6GB
+
+run-deadline:
+	$(PYTHON) scripts/train.py --config configs/deadline.yaml
+
+eval-deadline:
+	$(PYTHON) scripts/evaluate.py \
+		--checkpoint results/checkpoints_deadline/best_model.pt \
+		--config configs/deadline.yaml
+
+deadline: small-data small-prost run-deadline eval-deadline report-figures
 
 status:
 	@echo "== Embeddings =="
