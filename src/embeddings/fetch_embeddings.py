@@ -101,8 +101,8 @@ def main():
     ap.add_argument("--esm_model", default="esmc_300m", help="ESM-C model name (default: esmc_300m)")
     ap.add_argument("--esm_batch", type=int, default=32, help="Batch size for ESM-C token→embedding loop")        
     # ProstT5
-    ap.add_argument("--embed2_backend", choices=["protbert", "prostt5"], default="protbert",
-                    help="Second embedding backend (default: protbert)")
+    ap.add_argument("--embed2_backend", choices=["protbert", "prostt5"], default="prostt5",
+                    help="Second embedding backend (default: prostt5)")
     ap.add_argument("--prost_fasta", help="Input FASTA for second-embedding extraction (defaults to --esm_fasta if omitted and that is provided)")
     ap.add_argument("--prost_file", help="Existing ProstT5 HDF5 to reuse (optional)")
     ap.add_argument("--prost_out", default="prost_embeddings.h5", help="Output HDF5 for ProstT5 (if extracting). If --prost_pooling both, acts as prefix.")

@@ -8,10 +8,9 @@ Le travail a ete realise sur un ASUS TUF 15, majoritairement en CPU. Cela impose
 un temps de calcul eleve pour l'extraction des embeddings. Pour rester dans ces contraintes:
 \begin{itemize}
   \item limitation de la longueur maximale (\texttt{max\_len}) pour eviter les OOM ;
-  \item choix d'un second embedding plus leger (ProtBert) pour les runs CPU, car ProstT5 est
-  trop lourd en memoire sans GPU ;
+  \item utilisation de ProstT5 3Di en mode CPU avec \textit{offload disque} ;
   \item cache local des modeles HF pour eviter les retelechargements ;
-  \item batch sizes ajustes (ESM-C plus grand, ProtBert plus petit si besoin).
+  \item batch sizes ajustes (ESM-C modere, ProstT5 a batch 1).
 \end{itemize}
 
 \section{Donnees}
@@ -29,27 +28,28 @@ sont stratifies, avec une option pour clustering par identite si MMseqs2 est ins
   \item \textbf{Extraction des embeddings}:
     \begin{itemize}
       \item ESM-C (300M) pour un embedding principal (dimension 960).
-      \item ProtBert (dimension 1024) comme second embedding sur CPU.
+      \item ProstT5 3Di (dimension 1024) comme second embedding.
     \end{itemize}
-  \item \textbf{Entrainement} du modele Transformer + MLP.
+  \item \textbf{Entrainement} du modele Transformer + BiLSTM + MLP.
   \item \textbf{Evaluation} sur le split test (Accuracy, F1 macro, MCC).
 \end{enumerate}
 
 \section{Choix des embeddings et reduction du cout}
-Le choix ESM-C + ProtBert est un compromis qualite/ressources. ESM-C offre un embedding performant,
-mais ProstT5 demande beaucoup de memoire (modele > 11GB) et n'est pas viable sur CPU.
-ProtBert est beaucoup plus leger et stable sans GPU.
+Le sujet impose l'utilisation conjointe de ESM-C et ProstT5 3Di. ProstT5 etant couteux sur CPU,
+nous avons active l'\textit{offload} disque et adopte un batch de 1 pour stabiliser l'extraction.
 
-Pour limiter le temps de calcul, \texttt{max\_len} est fixe a 300. Cela conserve environ 30\% des sequences
-et permet d'extraire les embeddings sur CPU sans erreurs de memoire. Avec un GPU, on peut augmenter
-la longueur maximale pour se rapprocher de 100\% des donnees.
+Pour limiter le temps de calcul tout en gardant une couverture elevee du dataset, \texttt{max\_len}
+est fixe a 1000. Cette valeur conserve la grande majorite des sequences, tout en restant praticable
+sur une machine CPU.
 
 \section{Architecture du modele}
-Le modele respecte l'exigence \emph{embeddings $\rightarrow$ Transformer $\rightarrow$ MLP}:
+Le modele propose une architecture plus originale que l'article:
+\emph{embeddings $\rightarrow$ Transformer $\rightarrow$ BiLSTM $\rightarrow$ MLP}.
 \begin{itemize}
   \item projection lineaire des deux embeddings vers une dimension commune ;
-  \item traitement des deux modalites comme deux tokens d'un petit Transformer encoder ;
-  \item sortie du token \texttt{[CLS]} vers un MLP de classification.
+  \item traitement des modalites comme tokens d'un Transformer encoder ;
+  \item passage dans un BiLSTM pour modeliser les interactions ordonnees entre tokens ;
+  \item fusion \texttt{CLS + attention-pooling LSTM} puis MLP de classification.
 \end{itemize}
 
 \subsection*{Configuration principale}
@@ -60,11 +60,11 @@ Le modele respecte l'exigence \emph{embeddings $\rightarrow$ Transformer $\right
 Parametre & Valeur \\
 \midrule
 Embedding 1 & ESM-C 300M (dim 960) \\
-Embedding 2 & ProtBert (dim 1024) \\
+Embedding 2 & ProstT5 3Di (dim 1024) \\
 Pooling & meanpool \\
-max\_len & 300 \\
-ESM batch & 32 \\
-Embed2 batch & 32 \\
+max\_len & 1000 \\
+ESM batch & 16 \\
+Embed2 batch & 1 \\
 \bottomrule
 \end{tabular}
 \caption{Configuration principale pour l'extraction et l'entrainement.}
@@ -104,12 +104,11 @@ La longueur des sequences est tres variable (distribution a longue traine). Stat
   \item min: 8, mediane: 399, max: 5627
   \item P10: 146, P25: 264, P75: 557, P90: 787, P95: 878, P99: 1296
 \end{itemize}
-Pour des tests rapides sur CPU, un \texttt{max\_len} entre 150 et 300 est recommande.
-Avec \texttt{max\_len=300}, environ 30\% des sequences sont conservees, ce qui
-reduit fortement le cout de calcul.
+Pour des tests rapides sur CPU, un \texttt{max\_len} entre 600 et 1000 est recommande.
+La valeur \texttt{max\_len=1000} conserve la majorite des sequences tout en restant calculable.
 
 \subsection*{Repartition des splits}
-Train: 8929, Val: 1191, Test: 1786.
+Train: 8333, Val: 1191, Test: 2382.
 
 \subsection*{Graphiques}
 \begin{figure}[H]
@@ -131,7 +130,7 @@ Train: 8929, Val: 1191, Test: 1786.
 \end{figure}
 
 \section{Resultats}
-Run utilise: ESM-C + ProtBert (meanpool), \texttt{max\_len=300}, execution CPU.
+Run utilise: ESM-C + ProstT5 3Di (meanpool), \texttt{max\_len=1000}, execution CPU.
 
 \subsection*{Metriques globales}
 \begin{table}[H]
@@ -166,21 +165,30 @@ Cell Wall & 0.857 & 0.818 & 0.837 \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\linewidth]{results_metrics.png}
+\IfFileExists{figures/results_metrics.png}{
+  \includegraphics[width=0.7\linewidth]{results_metrics.png}
+}{
+  \fbox{\parbox{0.8\linewidth}{\centering Figure non disponible: lancer l'evaluation puis \texttt{make results-figures}.}}
+}
 \caption{Metriques globales.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{results_per_class_f1.png}
+\IfFileExists{figures/results_per_class_f1.png}{
+  \includegraphics[width=0.8\linewidth]{results_per_class_f1.png}
+}{
+  \fbox{\parbox{0.8\linewidth}{\centering Figure non disponible: lancer l'evaluation puis \texttt{make results-figures}.}}
+}
 \caption{F1 par classe.}
 \end{figure}
 
 \section{Limites et pistes d'amelioration}
 \begin{itemize}
   \item Monter \texttt{max\_len} et/ou utiliser un GPU pour integrer plus d'information de sequence.
-  \item Remplacer ProtBert par ProstT5 sur GPU pour exploiter la structure 3D.
-  \item Tester un Transformer plus profond ou un pooling different (mean/cls/both).
+  \item Tester une variante sans BiLSTM pour mesurer son apport exact.
+  \item Augmenter la profondeur du Transformer ou tester un pooling different (mean/cls/both).
+  \item Etendre l'evaluation avec validation croisee stricte type GraphPart.
 \end{itemize}
 
 \section{Reproductibilite}
@@ -188,9 +196,11 @@ Commandes principales (extraits):
 \begin{verbatim}
 python scripts/prepare_metadata.py --fasta data/raw/graphpart_set.fasta --output data/processed/metadata.csv
 python scripts/prepare_splits.py --metadata data/processed/metadata.csv --output data/processed/splits.csv
-python -m src.embeddings.fetch_embeddings --embed2_backend protbert --max_len 300
+python -m src.embeddings.fetch_embeddings --embed2_backend prostt5 --max_len 1000 --prost_batch 1 --prost_offload_dir data/interim/offload --prost_max_memory 6GB
 python scripts/train.py --config configs/default.yaml
 python scripts/evaluate.py --checkpoint results/checkpoints/best_model.pt --config configs/default.yaml
+make eda
+make results-figures
 \end{verbatim}
 
 \section{Conclusion}

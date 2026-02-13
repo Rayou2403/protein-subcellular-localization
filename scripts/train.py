@@ -16,7 +16,11 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data import ProteinLocalizationDataset, collate_variable_length
-from src.models import DualEmbeddingFusionModel, TransformerFusionModel
+from src.models import (
+    DualEmbeddingFusionModel,
+    TransformerFusionModel,
+    TransformerLSTMFusionModel,
+)
 from src.training import Trainer, get_loss_function
 
 
@@ -120,6 +124,20 @@ def create_model(config: dict) -> torch.nn.Module:
             hidden_dim=model_config["hidden_dim"],
             num_attention_heads=model_config.get("num_attention_heads", 4),
             num_transformer_layers=model_config.get("num_transformer_layers", 2),
+            dropout=model_config["dropout"],
+            num_classes=model_config["num_classes"],
+        )
+
+    if model_type == "transformer_lstm":
+        return TransformerLSTMFusionModel(
+            esmc_dim=model_config["esmc_dim"],
+            prostt5_dim=model_config["prostt5_dim"],
+            hidden_dim=model_config["hidden_dim"],
+            num_attention_heads=model_config.get("num_attention_heads", 4),
+            num_transformer_layers=model_config.get("num_transformer_layers", 2),
+            lstm_hidden_dim=model_config.get("lstm_hidden_dim", model_config["hidden_dim"] // 2),
+            lstm_layers=model_config.get("lstm_layers", 1),
+            lstm_bidirectional=model_config.get("lstm_bidirectional", True),
             dropout=model_config["dropout"],
             num_classes=model_config["num_classes"],
         )

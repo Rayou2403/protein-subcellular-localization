@@ -7,10 +7,10 @@ setup(
     author="Your Team",
     author_email="your.email@example.com",
     packages=find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     install_requires=[
         "torch>=2.0.0",
-        "numpy>=1.24.0",
+        "numpy>=1.26.4,<2.0",
         "pandas>=2.0.0",
         "scikit-learn>=1.3.0",
         "pyyaml>=6.0",

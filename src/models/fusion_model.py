@@ -259,3 +259,103 @@ class TransformerFusionModel(nn.Module):
         cls_out = self.post_norm(x[:, 0, :])
         logits = self.classifier(cls_out)
         return {"logits": logits}
+
+
+class TransformerLSTMFusionModel(nn.Module):
+    """
+    Transformer + BiLSTM fusion for dual pooled embeddings.
+
+    Pipeline:
+      1) project each embedding to a shared hidden dimension
+      2) encode [CLS, ESM-C, ProstT5] tokens with Transformer
+      3) run BiLSTM on encoded tokens to model ordered token interactions
+      4) attention-pool LSTM outputs and concatenate with CLS token
+      5) classify with MLP
+    """
+
+    def __init__(
+        self,
+        esmc_dim: int = 1280,
+        prostt5_dim: int = 1024,
+        hidden_dim: int = 512,
+        num_attention_heads: int = 4,
+        num_transformer_layers: int = 2,
+        lstm_hidden_dim: int = 256,
+        lstm_layers: int = 1,
+        lstm_bidirectional: bool = True,
+        dropout: float = 0.3,
+        num_classes: int = 6,
+    ):
+        super().__init__()
+
+        self.esmc_projection = nn.Sequential(
+            nn.Linear(esmc_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Dropout(dropout),
+        )
+        self.prostt5_projection = nn.Sequential(
+            nn.Linear(prostt5_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Dropout(dropout),
+        )
+
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+        self.token_type_embeddings = nn.Embedding(3, hidden_dim)
+
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=hidden_dim,
+            nhead=num_attention_heads,
+            dropout=dropout,
+            batch_first=True,
+            activation="gelu",
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_transformer_layers)
+        self.post_norm = nn.LayerNorm(hidden_dim)
+
+        self.lstm = nn.LSTM(
+            input_size=hidden_dim,
+            hidden_size=lstm_hidden_dim,
+            num_layers=lstm_layers,
+            batch_first=True,
+            dropout=dropout if lstm_layers > 1 else 0.0,
+            bidirectional=lstm_bidirectional,
+        )
+        lstm_out_dim = lstm_hidden_dim * (2 if lstm_bidirectional else 1)
+        self.lstm_pool = AttentionPooling(lstm_out_dim)
+
+        self.fusion_dropout = nn.Dropout(dropout)
+        self.classifier = ClassificationHead(
+            input_dim=hidden_dim + lstm_out_dim,
+            hidden_dim=hidden_dim,
+            num_classes=num_classes,
+            dropout=dropout,
+        )
+
+    def forward(
+        self,
+        esmc_embeddings: torch.Tensor,
+        prostt5_embeddings: torch.Tensor,
+        **kwargs,
+    ) -> Dict[str, torch.Tensor]:
+        esmc_proj = self.esmc_projection(esmc_embeddings)
+        prost_proj = self.prostt5_projection(prostt5_embeddings)
+
+        tokens = torch.stack([esmc_proj, prost_proj], dim=1)
+        cls = self.cls_token.expand(tokens.size(0), -1, -1)
+        x = torch.cat([cls, tokens], dim=1)
+
+        token_types = torch.arange(0, x.size(1), device=x.device).unsqueeze(0).expand(x.size(0), -1)
+        x = x + self.token_type_embeddings(token_types)
+
+        x = self.encoder(x)
+        x = self.post_norm(x)
+
+        cls_out = x[:, 0, :]
+        lstm_out, _ = self.lstm(x)
+        seq_out = self.lstm_pool(lstm_out)
+
+        fused = self.fusion_dropout(torch.cat([cls_out, seq_out], dim=-1))
+        logits = self.classifier(fused)
+        return {"logits": logits}

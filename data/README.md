@@ -1,21 +1,33 @@
 # Data Layout
 
-This project does not version large datasets or generated artifacts. Expected layout:
+Put the assignment assets directly under `data/`:
+
+- `data/deeplocpro_subject_btae677.pdf` (subject/article PDF)
+- `data/graphpart_set.fasta`
+- `data/full_dataset.fasta`
+- `data/benchmarking_dataset.fasta`
+
+Then run:
+
+```bash
+make ingest-data
+```
+
+This moves and normalizes inputs under `data/raw/`:
 
 ```
 data/
-  raw/                 # Original FASTA files
-  processed/           # Processed CSVs and embeddings
-  interim/             # Temporary subsets or intermediate outputs
-  external/            # External assets (optional)
+  raw/
+    graphpart_set.fasta
+    full_dataset.fasta
+    benchmarking_dataset.fasta
+  processed/           # metadata/splits/embeddings
+  interim/             # temporary subsets and offload files
+  external/            # optional external assets
 ```
 
-Examples:
-- `data/raw/graphpart_set.fasta`
+Core generated outputs:
 - `data/processed/metadata.csv`
 - `data/processed/splits.csv`
 - `data/processed/embeddings/esmc.h5`
 - `data/processed/embeddings/prostt5.h5`
-
-Place the DeepLocPro FASTA files under `data/raw/` and regenerate processed files
-with the scripts in `scripts/`.

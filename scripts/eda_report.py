@@ -17,7 +17,7 @@ import seaborn as sns
 
 
 DEFAULT_SPLITS = "data/processed/splits.csv"
-DEFAULT_OUT = "reports"
+DEFAULT_OUT = "report"
 DEFAULT_SAMPLE_FRAC = None
 DEFAULT_SAMPLE_N = None
 LABEL_MAP = {
@@ -83,7 +83,7 @@ def _make_overview(fig_dir: Path, out_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate EDA figures and summary.")
     parser.add_argument("--splits", default=DEFAULT_SPLITS, help="Path to splits CSV")
-    parser.add_argument("--out_dir", default=DEFAULT_OUT, help="Output directory (reports)")
+    parser.add_argument("--out_dir", default=DEFAULT_OUT, help="Output directory (report)")
     parser.add_argument("--sample_frac", type=float, default=DEFAULT_SAMPLE_FRAC, help="Sample fraction for plots")
     parser.add_argument("--sample_n", type=int, default=DEFAULT_SAMPLE_N, help="Sample size for plots")
     parser.add_argument("--seed", type=int, default=42, help="RNG seed for sampling")
@@ -149,14 +149,14 @@ def main() -> None:
     summary.append(
         "Les distributions par classe et par split montrent les volumes disponibles pour "
         "l'apprentissage. La longueur des sequences varie fortement, ce qui augmente le cout "
-        "de calcul pendant l'extraction d'embeddings. Pour des tests rapides et reproductibles, "
-        "il est recommande de limiter la longueur des sequences (ex: 150 aa) et/ou d'utiliser "
-        "un sous-ensemble avec `--subset_frac` ou `--subset_max` dans `fetch_embeddings`."
+        "de calcul pendant l'extraction d'embeddings. En pratique, `max_len=1000` est un bon "
+        "compromis CPU: couverture elevee du dataset tout en restant faisable avec ProstT5 3Di."
     )
     summary.append(
         "Exemple: `python -m src.embeddings.fetch_embeddings --esm_fasta data/raw/graphpart_set.fasta "
         "--esm_out data/processed/embeddings/esmc.h5 --prost_out data/processed/embeddings/prostt5.h5 "
-        "--esm_batch 1 --max_len 150 --subset_frac 0.1`."
+        "--embed2_backend prostt5 --esm_batch 16 --prost_batch 1 --max_len 1000 "
+        "--prost_offload_dir data/interim/offload --prost_max_memory 6GB`."
     )
 
     # Label distribution bar plot

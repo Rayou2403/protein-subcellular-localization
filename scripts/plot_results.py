@@ -57,8 +57,15 @@ def plot_per_class(per_class: dict, out_path: str) -> None:
 def main() -> None:
     metrics_path = os.path.join("results", "evaluation", "metrics.json")
     per_class_path = os.path.join("results", "evaluation", "per_class_metrics.json")
-    out_dir = os.path.join("reports", "figures")
+    out_dir = os.path.join("report", "figures")
     os.makedirs(out_dir, exist_ok=True)
+
+    if not os.path.exists(metrics_path) or not os.path.exists(per_class_path):
+        print(
+            "Skipping result plots: missing evaluation files "
+            f"({metrics_path}, {per_class_path})."
+        )
+        return
 
     metrics = _load_json(metrics_path)
     per_class = _load_json(per_class_path)

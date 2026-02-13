@@ -10,12 +10,15 @@ data:
   num_workers: 4
 
 model:
-  type: "transformer_mlp"
+  type: "transformer_lstm"
   esmc_dim: 960
   prostt5_dim: 1024
   hidden_dim: 768
   num_attention_heads: 8
   num_transformer_layers: 3
+  lstm_hidden_dim: 384
+  lstm_layers: 1
+  lstm_bidirectional: true
   num_fusion_layers: 2
   dropout: 0.2
   num_classes: 6

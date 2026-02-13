@@ -5,6 +5,12 @@ notebooks/
 .git/
 .gitignore
 .claude/
+.venv/
+venv/
+env/
+ENV/
+report/figures/
+report/eda.md
 __pycache__/
 *.pyc
 *.pyo

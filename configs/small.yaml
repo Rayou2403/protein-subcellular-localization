@@ -12,12 +12,15 @@ data:
 
 # Model architecture
 model:
-  type: "transformer_mlp"
+  type: "transformer_lstm"
   esmc_dim: 960
   prostt5_dim: 1024
   hidden_dim: 256
   num_attention_heads: 4
   num_transformer_layers: 1
+  lstm_hidden_dim: 128
+  lstm_layers: 1
+  lstm_bidirectional: true
   num_fusion_layers: 1
   dropout: 0.3
   num_classes: 6
